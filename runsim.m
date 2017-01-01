@@ -9,7 +9,7 @@ addpath('utils');
 
 %%% pre-calculated trajectories
 
-trajopt = 3;
+trajopt = 5;
 
 waypoints = [];
 max_time = 20;
@@ -39,9 +39,9 @@ switch trajopt
       wpt = zeros(n+1,3);
       zmax = 5;
       for i = 1:n
-          ang = 2*pi*(i-1)/npcirc
+          ang = 2*pi*(i-1)/npcirc;
           z = zmax*(i-1)/(n-1);
-          npt = cen + [ rad*cos(ang) rad*sin(ang) z ]
+          npt = cen + [ rad*cos(ang) rad*sin(ang) z ];
           wpt(i,:) = npt;
       end
       waypoints = wpt';
@@ -94,10 +94,19 @@ controlhandle = @controller;
 
 cdata = [t state];
 stfname = sprintf('tstate_%s.csv',rootname);
-headers = {'t','x', 'y', 'z', 'xd', 'yd', 'zd', 'qw', 'qx', 'qy', 'qz', 'p', 'q', 'r'};
+headers = {'t','x', 'y', 'z', 'xdot', 'ydot', 'zdot', 'qw', 'qx', 'qy', 'qz', 'p', 'q', 'r'};
 csvwrite_with_headers(stfname,cdata,headers)
 
 qdata = [QP.time_hist' QP.state_hist' QP.state_des_hist'];
 qfname = sprintf('tstate_quad_%s.csv',rootname);
-qheaders = {'t','x', 'y', 'z', 'v1', 'v2', 'v3', 'dsx', 'dsy', 'dsz', 'dsv1', 'dsv2', 'dsv3'};
+qheaders = {'t','x', 'y', 'z', 'xdot', 'ydot', 'zdot', 'des_x', 'des_y', 'des_z', 'des_xdot', 'des_ydot', 'des_zdot'};
 csvwrite_with_headers(qfname,qdata,qheaders)
+
+% calc error
+p = QP.state_hist(1:3,:)';
+des_p = QP.state_des_hist(1:3,:)';
+n = size(p,1);
+diffsq = sum((des_p-p) .* (des_p-p),2);
+maxerr = max(diffsq);
+avgerr = sum(diffsq)/n;
+fprintf(1,'Run:%s - steps:%d maxerr:%.3g avgerr:%.3g\n',rootname,n,maxerr,avgerr) 
