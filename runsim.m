@@ -9,28 +9,26 @@ addpath('utils');
 
 %%% pre-calculated trajectories
 
-trajopt = 5;
+trajopt = 3;
+
+waypoints = [];
+max_time = 20;
 
 switch trajopt
     case 1
       trajhandle = @traj_line;
       rootname = 'line';
-      waypoints = [];
-      max_time = 20;
     case 2
       trajhandle = @traj_helix;
       rootname = 'helix';
-      waypoints = [];
-      max_time = 20;
     case 3
       trajhandle = @traj_generator;
       rootname = 'wapt5';
-      max_time = 20;
-      waypoints = [0    0   0;
-              1    1   1;
-              2    0   2;
-              3    -1  1;
-              4    0   0]';
+      waypoints = [0   0   0;
+                   1   1   1;
+                   2   0   2;
+                   3  -1   1;
+                   4   0   0]'; % note the transpose
     case 4
       trajhandle = @traj_generator;
       rootname = 'waptcirc';
@@ -48,7 +46,6 @@ switch trajopt
       end
       waypoints = wpt';
       max_time = 300;
-
    case 5
       trajhandle = @traj_generator;
       rootname = 'waptspiral';
@@ -74,7 +71,7 @@ switch trajopt
       error('Error bad trajopt specified')
 end
 
-stfname = sprintf('tstate_%s.csv',rootname)
+
 % 
 % trajhandle = @traj_helix;
 
@@ -82,7 +79,9 @@ stfname = sprintf('tstate_%s.csv',rootname)
 %% You need to implement this
 % trajhandle = @traj_generator;
 
-trajhandle([],[],waypoints);
+if ~isempty(waypoints)
+   trajhandle([],[],waypoints);
+end
 
 
 %% controller
@@ -94,5 +93,11 @@ controlhandle = @controller;
 [t, state, QP] = simulation_3d(trajhandle, controlhandle,max_time);
 
 cdata = [t state];
+stfname = sprintf('tstate_%s.csv',rootname);
 headers = {'t','x', 'y', 'z', 'xd', 'yd', 'zd', 'qw', 'qx', 'qy', 'qz', 'p', 'q', 'r'};
 csvwrite_with_headers(stfname,cdata,headers)
+
+qdata = [QP.time_hist' QP.state_hist' QP.state_des_hist'];
+qfname = sprintf('tstate_quad_%s.csv',rootname);
+qheaders = {'t','x', 'y', 'z', 'v1', 'v2', 'v3', 'dsx', 'dsy', 'dsz', 'dsv1', 'dsv2', 'dsv3'};
+csvwrite_with_headers(qfname,qdata,qheaders)
