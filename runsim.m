@@ -22,7 +22,7 @@ switch trajopt
       trajhandle = @traj_helix;
       rootname = 'helix';
     case 3
-      trajhandle = @traj_generator;
+      trajhandle = @traj_generator0;
       rootname = 'wapt5';
       waypoints = [0   0   0;
                    1   1   1;
@@ -30,7 +30,7 @@ switch trajopt
                    3  -1   1;
                    4   0   0]'; % note the transpose
     case 4
-      trajhandle = @traj_generator;
+      trajhandle = @traj_generator_spline;
       rootname = 'waptcirc';
       n = 30;
       npcirc = 10;
@@ -47,15 +47,17 @@ switch trajopt
       waypoints = wpt';
       max_time = 300;
    case 5
-      trajhandle = @traj_generator;
+      trajhandle = @traj_generator_spline;
       rootname = 'waptspiral';
       n = 42;
       npcirc = 12;
       cen = [0 0 0];
+      cenh = [0 0 0.1];
       wpt = zeros(n+1,3);
       zmax = 2.0;
       rmax = 1.0;
       highcen = [0 0 zmax];
+      highcenl = [0 0 zmax-0.2];
       for i = 1:n
           ang = 2*pi*(i-1)/npcirc;
           z = zmax*(i-1)/(n-1);
@@ -64,9 +66,10 @@ switch trajopt
           wpt(i,:) = npt;
       end      
       wpt(n+1,:) = highcen;
-      wpt(n+2,:) =     cen;
+      wpt(n+2,:) = highcenl;
+      wpt(n+3,:) =     cen;
       waypoints = wpt';
-      max_time = 300;      
+      max_time = 30;      
     otherwise
       error('Error bad trajopt specified')
 end

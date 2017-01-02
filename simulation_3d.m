@@ -73,7 +73,7 @@ for iter = 1:max_iter
 
     % Run simulation
     [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
-    x    = xsave(end, :)';
+     x    = xsave(end, :)';
 
     % Save to traj
     xtraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,:);
